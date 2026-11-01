@@ -84,8 +84,17 @@ TERMOS_SENSACIONALISTAS = [
     "repasse", "censurado", "escândalo", "não caia nessa", "verdade oculta"
 ]
 
+MARCADORES_WHATSAPP = [
+    "encaminhada com frequência",
+    "encaminhada com frequencia",
+    "mensagem encaminhada",
+    "frequently forwarded",
+    "repasse para todos",
+    "compartilhe nos grupos",
+]
 
-def analisar_heuristica_sensacionalismo(texto: str) -> dict:
+
+def analisar_heuristica_sensacionalismo(texto: str, origem_ocr: bool = False) -> dict:
     letras = [c for c in texto if c.isalpha()]
     proporcao_maiusculas = (
         sum(1 for c in letras if c.isupper()) / len(letras) if len(letras) > 10 else 0.0
@@ -93,9 +102,17 @@ def analisar_heuristica_sensacionalismo(texto: str) -> dict:
     exclamacoes = texto.count("!")
     texto_lower = texto.lower()
     gatilhos_encontrados = [t for t in TERMOS_SENSACIONALISTAS if t in texto_lower]
+    marcadores_zap = [m for m in MARCADORES_WHATSAPP if m in texto_lower]
 
     penalidade = 0.0
     sinais = []
+
+    if origem_ocr:
+        sinais.append("Texto extraído de imagem/print via OCR (Visão Computacional)")
+
+    if marcadores_zap:
+        penalidade += 0.20
+        sinais.append(f"Selo de corrente viral do WhatsApp detectado ('{marcadores_zap[0]}')")
 
     if proporcao_maiusculas > 0.25:
         penalidade += 0.15
@@ -125,17 +142,18 @@ def catch_all(path):
 
     data = request.get_json(silent=True) or {}
     texto = (data.get("text") or "").strip()
+    origem_ocr = bool(data.get("from_ocr", False))
 
     if len(texto) < 15:
         return jsonify({
-            "error": "Por favor, insira um trecho de notícia com pelo menos 15 caracteres para análise."
+            "error": "Por favor, insira ou extraia um texto de notícia com pelo menos 15 caracteres para análise."
         }), 400
 
     try:
         probs = model.predict_proba([texto])[0]
         prob_modelo_confiavel = float(probs[1])
 
-        heuristica = analisar_heuristica_sensacionalismo(texto)
+        heuristica = analisar_heuristica_sensacionalismo(texto, origem_ocr=origem_ocr)
         score_final = max(0.02, min(0.98, prob_modelo_confiavel - heuristica["penalidade"]))
         score_percentual = round(score_final * 100, 1)
 
@@ -160,8 +178,8 @@ def catch_all(path):
             cor = "red"
             emoji = "🔴"
             mensagem = (
-                "Alta probabilidade de desinformação! O texto contém fortes padrões de "
-                "clickbait, apelo emocional ou estrutura típica de boatos virais."
+                "Alta probabilidade de desinformação! O conteúdo contém fortes padrões de "
+                "clickbait, apelo emocional ou estrutura típica de correntes virais de WhatsApp."
             )
 
         return jsonify({
