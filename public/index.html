@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Termômetro da Notícia | Detector de Fake News com IA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .thermometer-bar {
+      transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.4s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header / Hero -->
+  <header class="w-full max-w-3xl mx-auto px-4 pt-8 pb-4 text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-4">
+      <span>⚡ NLP + Scikit-Learn (TF-IDF &amp; Naive Bayes)</span>
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+      Termômetro da Notícia
+    </h1>
+    <p class="mt-3 text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
+      Cole o texto ou manchete de uma notícia abaixo. Nosso modelo de Processamento de Linguagem Natural analisa padrões linguísticos e estima o índice de confiabilidade.
+    </p>
+  </header>
+
+  <!-- Main Card -->
+  <main class="w-full max-w-3xl mx-auto px-4 py-4 flex-1">
+    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-2xl">
+
+      <!-- Atalhos de Exemplo para Teste Rápido -->
+      <div class="mb-4">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">
+          Testar com exemplos rápidos:
+        </span>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="preencherExemplo('verdadeira')"
+            class="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition">
+            🟢 Exemplo Confiável
+          </button>
+          <button type="button" onclick="preencherExemplo('suspeita')"
+            class="text-xs px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition">
+            🟡 Exemplo Suspeito
+          </button>
+          <button type="button" onclick="preencherExemplo('falsa')"
+            class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition">
+            🔴 Exemplo Fake News
+          </button>
+        </div>
+      </div>
+
+      <!-- Textarea -->
+      <label for="newsInput" class="block text-sm font-medium text-slate-300 mb-2">
+        Texto da notícia ou mensagem recebida:
+      </label>
+      <textarea
+        id="newsInput"
+        rows="6"
+        placeholder="Cole aqui a manchete, parágrafo ou corrente de WhatsApp que você deseja verificar..."
+        class="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-100 placeholder-slate-500 p-4 text-sm sm:text-base outline-none transition resize-y"
+      ></textarea>
+
+      <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
+        <span id="charCount">0 caracteres</span>
+        <button type="button" onclick="limparCampo()" class="hover:text-slate-300 transition">
+          Limpar texto
+        </button>
+      </div>
+
+      <!-- Botão Analisar -->
+      <button
+        id="analyzeBtn"
+        type="button"
+        onclick="analisarNoticia()"
+        class="mt-5 w-full py-3.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-sm sm:text-base shadow-lg shadow-indigo-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span id="btnText">Analisar Notícia</span>
+        <svg id="btnSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+      </button>
+
+      <!-- Mensagem de Erro -->
+      <div id="errorBox" class="hidden mt-4 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm"></div>
+
+      <!-- Resultado: Termômetro de Confiabilidade -->
+      <section id="resultCard" class="hidden mt-7 pt-6 border-t border-slate-800">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Diagnóstico do Modelo</span>
+            <div class="flex items-center gap-2 mt-1">
+              <span id="statusEmoji" class="text-2xl">🟢</span>
+              <h2 id="statusTitle" class="text-xl sm:text-2xl font-bold">CONFIÁVEL</h2>
+            </div>
+          </div>
+          <div class="sm:text-right bg-slate-950/80 border border-slate-800 px-4 py-2 rounded-xl">
+            <span class="text-xs text-slate-400 block">Índice de Confiabilidade</span>
+            <span id="trustScoreText" class="text-2xl font-extrabold text-white">85%</span>
+          </div>
+        </div>
+
+        <!-- Barra do Termômetro -->
+        <div class="relative w-full h-5 bg-slate-950 rounded-full overflow-hidden border border-slate-800 p-0.5">
+          <div id="thermometerBar" class="thermometer-bar h-full rounded-full w-0 bg-emerald-500"></div>
+        </div>
+        <div class="flex justify-between text-[11px] font-medium text-slate-400 mt-1.5 px-1">
+          <span>🔴 0% (Falso)</span>
+          <span>🟡 50% (Suspeito)</span>
+          <span>🟢 100% (Confiável)</span>
+        </div>
+
+        <!-- Explicação -->
+        <p id="resultMessage" class="mt-4 text-sm text-slate-300 bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 leading-relaxed"></p>
+
+        <!-- Sinais Linguísticos Detectados -->
+        <div id="signalsContainer" class="hidden mt-4">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-2">
+            ⚠️ Sinais de Alerta Detectados no Texto:
+          </h3>
+          <ul id="signalsList" class="space-y-1 text-xs text-slate-300 list-disc list-inside bg-amber-500/5 border border-amber-500/20 rounded-xl p-3"></ul>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-3xl mx-auto px-4 py-6 text-center text-xs text-slate-500">
+    MVP Acadêmico de Ciência de Dados • Classificador TF-IDF + Multinomial Naive Bayes • Hospedado na Vercel
+  </footer>
+
+  <!-- Vanilla JS -->
+  <script>
+    const newsInput = document.getElementById('newsInput');
+    const charCount = document.getElementById('charCount');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+    const errorBox = document.getElementById('errorBox');
+    const resultCard = document.getElementById('resultCard');
+
+    const EXEMPLOS = {
+      verdadeira: "O Banco Central anunciou nesta quarta-feira a manutenção da taxa básica de juros Selic após reunião do Copom, citando projeções de inflação do IBGE e o desempenho do setor de serviços no último trimestre.",
+      suspeita: "Fontes afirmam que o ministério estuda uma possível mudança urgente nas regras de impostos no próximo mês, mas o congresso ainda não confirmou se a medida realmente será votada.",
+      falsa: "URGENTE! Vazou áudio secreto que a grande mídia não quer mostrar! Tomar água morna com limão e bicarbonato em jejum cura 100% de qualquer doença em 3 dias! Compartilhe rápido antes que apaguem!"
+    };
+
+    newsInput.addEventListener('input', () => {
+      charCount.textContent = `${newsInput.value.length} caracteres`;
+    });
+
+    function preencherExemplo(tipo) {
+      newsInput.value = EXEMPLOS[tipo] || '';
+      charCount.textContent = `${newsInput.value.length} caracteres`;
+      errorBox.classList.add('hidden');
+    }
+
+    function limparCampo() {
+      newsInput.value = '';
+      charCount.textContent = '0 caracteres';
+      errorBox.classList.add('hidden');
+      resultCard.classList.add('hidden');
+    }
+
+    async function analisarNoticia() {
+      const texto = newsInput.value.trim();
+      errorBox.classList.add('hidden');
+
+      if (texto.length < 15) {
+        mostrarErro('Por favor, insira uma notícia com pelo menos 15 caracteres para análise.');
+        return;
+      }
+
+      // Estado de carregamento
+      analyzeBtn.disabled = true;
+      btnText.textContent = 'Analisando padrões linguísticos...';
+      btnSpinner.classList.remove('hidden');
+
+      try {
+        const response = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: texto })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Falha ao processar a requisição no servidor.');
+        }
+
+        exibirResultado(data);
+      } catch (err) {
+        mostrarErro(err.message || 'Não foi possível conectar ao servidor Serverless.');
+      } finally {
+        analyzeBtn.disabled = false;
+        btnText.textContent = 'Analisar Notícia';
+        btnSpinner.classList.add('hidden');
+      }
+    }
+
+    function mostrarErro(msg) {
+      errorBox.textContent = msg;
+      errorBox.classList.remove('hidden');
+    }
+
+    function exibirResultado(data) {
+      const statusEmoji = document.getElementById('statusEmoji');
+      const statusTitle = document.getElementById('statusTitle');
+      const trustScoreText = document.getElementById('trustScoreText');
+      const thermometerBar = document.getElementById('thermometerBar');
+      const resultMessage = document.getElementById('resultMessage');
+      const signalsContainer = document.getElementById('signalsContainer');
+      const signalsList = document.getElementById('signalsList');
+
+      statusEmoji.textContent = data.emoji;
+      statusTitle.textContent = data.status;
+      trustScoreText.textContent = `${data.trust_score}%`;
+      resultMessage.textContent = data.message;
+
+      // Estilização dinâmica por faixa do termômetro
+      thermometerBar.className = 'thermometer-bar h-full rounded-full';
+      statusTitle.className = 'text-xl sm:text-2xl font-bold';
+
+      if (data.color === 'green') {
+        thermometerBar.classList.add('bg-emerald-500');
+        statusTitle.classList.add('text-emerald-400');
+      } else if (data.color === 'yellow') {
+        thermometerBar.classList.add('bg-amber-400');
+        statusTitle.classList.add('text-amber-400');
+      } else {
+        thermometerBar.classList.add('bg-rose-500');
+        statusTitle.classList.add('text-rose-400');
+      }
+
+      resultCard.classList.remove('hidden');
+
+      // Animação da barra de progresso
+      requestAnimationFrame(() => {
+        thermometerBar.style.width = `${data.trust_score}%`;
+      });
+
+      // Exibir sinais de alerta se houver
+      signalsList.innerHTML = '';
+      if (data.signals && data.signals.length > 0) {
+        data.signals.forEach(sinal => {
+          const li = document.createElement('li');
+          li.textContent = sinal;
+          signalsList.appendChild(li);
+        });
+        signalsContainer.classList.remove('hidden');
+      } else {
+        signalsContainer.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
+
