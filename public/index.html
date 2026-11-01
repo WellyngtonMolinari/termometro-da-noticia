@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Termômetro da Notícia | Detector de Fake News e Prints de WhatsApp</title>
+  <title>Termômetro da Notícia | Detector de Fake News, Links e Prints</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Tesseract.js para OCR Client-Side (leitura de prints do WhatsApp e imagens virais) -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -22,13 +22,13 @@
   <!-- Header / Hero -->
   <header class="w-full max-w-3xl mx-auto px-4 pt-8 pb-4 text-center">
     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-4">
-      <span>⚡ NLP (TF-IDF + Naive Bayes) &amp; OCR para Prints de WhatsApp</span>
+      <span>⚡ NLP + Web Scraping de Links + OCR para Prints de WhatsApp</span>
     </div>
     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
       Termômetro da Notícia
     </h1>
     <p class="mt-3 text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-      Cole o texto de uma notícia ou <strong>anexe o print de uma conversa/imagem viral do WhatsApp</strong>. Nossa IA extrai o texto da imagem e avalia o índice de confiabilidade.
+      Analise <strong>links de sites de notícias</strong>, <strong>prints de grupos de WhatsApp</strong> ou <strong>textos colados</strong>. Nossa IA extrai o conteúdo e calcula o índice de confiabilidade.
     </p>
   </header>
 
@@ -36,16 +36,52 @@
   <main class="w-full max-w-3xl mx-auto px-4 py-4 flex-1">
     <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-2xl">
 
-      <!-- Upload de Print / Imagem Viral do WhatsApp -->
-      <div class="mb-6">
-        <div class="flex items-center justify-between mb-2">
+      <!-- 1. Analisar por Link (URL de Site de Notícia) -->
+      <div class="mb-6 pb-6 border-b border-slate-800">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <label for="urlInput" class="text-xs font-semibold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+            <span>🔗 Analisar Link de Site de Notícia (Web Scraping + Domínio)</span>
+          </label>
+          <button
+            type="button"
+            onclick="preencherUrlExemplo()"
+            class="text-xs text-sky-400 hover:text-sky-300 underline transition"
+          >
+            Testar com Link da Euronews
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input
+            id="urlInput"
+            type="url"
+            placeholder="https://pt.euronews.com/2026/10/31/franca-mobiliza-70-mil-policias..."
+            class="flex-1 rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-100 placeholder-slate-500 px-4 py-3 text-sm outline-none transition"
+          />
+          <button
+            id="analyzeUrlBtn"
+            type="button"
+            onclick="analisarLink()"
+            class="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-semibold text-sm shadow-lg shadow-sky-600/20 transition whitespace-nowrap flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <span>Extrair &amp; Analisar Link</span>
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-1.5">
+          Nosso backend acessa a página, extrai a manchete e o corpo da matéria, verifica a reputação do domínio e preenche a análise abaixo.
+        </p>
+      </div>
+
+      <!-- 2. Upload de Print / Imagem Viral do WhatsApp -->
+      <div class="mb-6 pb-6 border-b border-slate-800">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
           <label class="text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
             <span>📱 Anexar Print ou Imagem Viral de Grupo de WhatsApp (OCR)</span>
           </label>
           <button
             type="button"
             onclick="gerarPrintSimuladoWhatsApp()"
-            class="text-xs text-indigo-400 hover:text-indigo-300 underline transition"
+            class="text-xs text-emerald-400 hover:text-emerald-300 underline transition"
           >
             Testar com Print Simulado de WhatsApp
           </button>
@@ -97,7 +133,7 @@
         </div>
       </div>
 
-      <!-- Atalhos de Exemplo de Texto -->
+      <!-- 3. Atalhos de Exemplo de Texto -->
       <div class="mb-4">
         <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">
           Ou testar com exemplos de texto rápidos:
@@ -119,18 +155,23 @@
       </div>
 
       <!-- Textarea -->
-      <div class="flex items-center justify-between mb-2">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
         <label for="newsInput" class="block text-sm font-medium text-slate-300">
-          Texto da notícia ou transcrição do print:
+          Conteúdo da notícia (texto direto, matéria extraída do link ou transcrição do print):
         </label>
-        <span id="ocrBadge" class="hidden text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-          ✨ Extraído via OCR do Print
-        </span>
+        <div class="flex items-center gap-2">
+          <span id="urlBadge" class="hidden text-[11px] px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">
+            🔗 Extraído via Link
+          </span>
+          <span id="ocrBadge" class="hidden text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+            ✨ Extraído via OCR do Print
+          </span>
+        </div>
       </div>
       <textarea
         id="newsInput"
         rows="5"
-        placeholder="Cole aqui a manchete, corrente de WhatsApp ou anexe um print acima para extrair o texto automaticamente..."
+        placeholder="Cole aqui o texto, link de uma notícia ou anexe um print acima..."
         class="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-100 placeholder-slate-500 p-4 text-sm sm:text-base outline-none transition resize-y"
       ></textarea>
 
@@ -184,13 +225,22 @@
           <span>🟢 100% (Confiável)</span>
         </div>
 
+        <!-- Metadados do Link Extraído (se veio de URL) -->
+        <div id="scrapedMetaBox" class="hidden mt-4 p-3.5 rounded-xl bg-sky-500/5 border border-sky-500/20 text-xs text-slate-300">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="font-semibold text-sky-400 uppercase tracking-wider">🌐 Fonte da Matéria Analisada</span>
+            <span id="scrapedDomainBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[11px]"></span>
+          </div>
+          <p id="scrapedTitleText" class="font-medium text-slate-100 text-sm mt-1"></p>
+        </div>
+
         <!-- Explicação -->
         <p id="resultMessage" class="mt-4 text-sm text-slate-300 bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 leading-relaxed"></p>
 
         <!-- Sinais Linguísticos Detectados -->
         <div id="signalsContainer" class="hidden mt-4">
           <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-2">
-            ⚠️ Sinais e Padrões Detectados:
+            🔎 Sinais e Evidências Analisadas:
           </h3>
           <ul id="signalsList" class="space-y-1 text-xs text-slate-300 list-disc list-inside bg-amber-500/5 border border-amber-500/20 rounded-xl p-3"></ul>
         </div>
@@ -201,11 +251,13 @@
 
   <!-- Footer -->
   <footer class="w-full max-w-3xl mx-auto px-4 py-6 text-center text-xs text-slate-500">
-    MVP Acadêmico de Ciência de Dados • Classificador TF-IDF + Multinomial Naive Bayes + OCR Tesseract.js • Hospedado na Vercel
+    MVP Acadêmico de Ciência de Dados • TF-IDF + Multinomial Naive Bayes + Web Scraping (BeautifulSoup) + OCR (Tesseract.js)
   </footer>
 
   <!-- Vanilla JS -->
   <script>
+    const urlInput = document.getElementById('urlInput');
+    const analyzeUrlBtn = document.getElementById('analyzeUrlBtn');
     const newsInput = document.getElementById('newsInput');
     const charCount = document.getElementById('charCount');
     const analyzeBtn = document.getElementById('analyzeBtn');
@@ -214,6 +266,10 @@
     const errorBox = document.getElementById('errorBox');
     const resultCard = document.getElementById('resultCard');
     const ocrBadge = document.getElementById('ocrBadge');
+    const urlBadge = document.getElementById('urlBadge');
+    const scrapedMetaBox = document.getElementById('scrapedMetaBox');
+    const scrapedDomainBadge = document.getElementById('scrapedDomainBadge');
+    const scrapedTitleText = document.getElementById('scrapedTitleText');
     const dropZone = document.getElementById('dropZone');
     const uploadPrompt = document.getElementById('uploadPrompt');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
@@ -233,6 +289,56 @@
     newsInput.addEventListener('input', () => {
       charCount.textContent = `${newsInput.value.length} caracteres`;
     });
+
+    function preencherUrlExemplo() {
+      urlInput.value = 'https://pt.euronews.com/2026/10/31/franca-mobiliza-70-mil-policias-para-fim-de-semana-de-manifestacoes-e-halloween';
+      analisarLink();
+    }
+
+    async function analisarLink() {
+      const url = urlInput.value.trim();
+      errorBox.classList.add('hidden');
+
+      if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+        mostrarErro('Por favor, insira um link válido começando com https:// ou http://');
+        return;
+      }
+
+      removerImagem();
+      analyzeUrlBtn.disabled = true;
+      analyzeBtn.disabled = true;
+      btnText.textContent = 'Extraindo matéria do link e analisando...';
+      btnSpinner.classList.remove('hidden');
+
+      try {
+        const response = await fetch('/api/index', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Falha ao extrair ou analisar o link informado.');
+        }
+
+        if (data.scraped_article) {
+          newsInput.value = data.scraped_article.extracted_text;
+          charCount.textContent = `${newsInput.value.length} caracteres`;
+          urlBadge.classList.remove('hidden');
+        }
+
+        exibirResultado(data);
+      } catch (err) {
+        mostrarErro(err.message || 'Não foi possível acessar o link informado.');
+      } finally {
+        analyzeUrlBtn.disabled = false;
+        analyzeBtn.disabled = false;
+        btnText.textContent = 'Analisar Notícia';
+        btnSpinner.classList.add('hidden');
+      }
+    }
 
     // Suporte a Arrastar e Soltar (Drag & Drop)
     dropZone.addEventListener('dragover', (e) => {
@@ -273,6 +379,7 @@
 
     async function executarOcrNaImagem(fileOrDataUrl) {
       errorBox.classList.add('hidden');
+      urlBadge.classList.add('hidden');
       uploadPrompt.classList.add('hidden');
       imagePreviewContainer.classList.remove('hidden');
       imagePreviewContainer.classList.add('flex');
@@ -328,20 +435,16 @@
       canvas.height = 320;
       const ctx = canvas.getContext('2d');
 
-      // Fundo escuro padrão WhatsApp
       ctx.fillStyle = '#0b141a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Balão verde escuro de mensagem recebida
       ctx.fillStyle = '#005c4b';
       ctx.fillRect(30, 25, 660, 270);
 
-      // Selo "Encaminhada com frequência"
       ctx.fillStyle = '#d1d7db';
       ctx.font = 'italic 20px Arial';
       ctx.fillText('»» Encaminhada com frequência', 50, 62);
 
-      // Corpo da Fake News no print
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 23px Arial';
       ctx.fillText('URGENTE! BOMBA QUE A MÍDIA ESCONDE!', 50, 108);
@@ -371,6 +474,8 @@
 
     function preencherExemplo(tipo) {
       removerImagem();
+      urlBadge.classList.add('hidden');
+      urlInput.value = '';
       newsInput.value = EXEMPLOS[tipo] || '';
       charCount.textContent = `${newsInput.value.length} caracteres`;
       errorBox.classList.add('hidden');
@@ -378,6 +483,8 @@
 
     function limparCampo() {
       removerImagem();
+      urlBadge.classList.add('hidden');
+      urlInput.value = '';
       newsInput.value = '';
       charCount.textContent = '0 caracteres';
       errorBox.classList.add('hidden');
@@ -389,7 +496,7 @@
       errorBox.classList.add('hidden');
 
       if (texto.length < 15) {
-        mostrarErro('Por favor, insira uma notícia ou anexe um print com pelo menos 15 caracteres.');
+        mostrarErro('Por favor, insira uma notícia, cole um link válido ou anexe um print.');
         return;
       }
 
@@ -408,6 +515,12 @@
 
         if (!response.ok) {
           throw new Error(data.error || 'Falha ao processar a requisição no servidor.');
+        }
+
+        if (data.scraped_article) {
+          newsInput.value = data.scraped_article.extracted_text;
+          charCount.textContent = `${newsInput.value.length} caracteres`;
+          urlBadge.classList.remove('hidden');
         }
 
         exibirResultado(data);
@@ -438,6 +551,14 @@
       statusTitle.textContent = data.status;
       trustScoreText.textContent = `${data.trust_score}%`;
       resultMessage.textContent = data.message;
+
+      if (data.scraped_article) {
+        scrapedDomainBadge.textContent = data.scraped_article.domain;
+        scrapedTitleText.textContent = data.scraped_article.title;
+        scrapedMetaBox.classList.remove('hidden');
+      } else {
+        scrapedMetaBox.classList.add('hidden');
+      }
 
       thermometerBar.className = 'thermometer-bar h-full rounded-full';
       statusTitle.className = 'text-xl sm:text-2xl font-bold';
