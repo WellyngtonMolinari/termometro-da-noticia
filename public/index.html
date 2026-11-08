@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Termômetro da Notícia | Detector de Fake News, Links e Prints</title>
+  <title>Termômetro da Notícia | Detector Inteligente de Fake News</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Tesseract.js para OCR Client-Side (leitura de prints do WhatsApp e imagens virais) -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -22,13 +22,13 @@
   <!-- Header / Hero -->
   <header class="w-full max-w-3xl mx-auto px-4 pt-8 pb-4 text-center">
     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-4">
-      <span>⚡ NLP + Web Scraping de Links + OCR para Prints de WhatsApp</span>
+      <span>⚡ Detecção Automática: Texto • Link de Site • Print de WhatsApp</span>
     </div>
     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
       Termômetro da Notícia
     </h1>
     <p class="mt-3 text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-      Analise <strong>links de sites de notícias</strong>, <strong>prints de grupos de WhatsApp</strong> ou <strong>textos colados</strong>. Nossa IA extrai o conteúdo e calcula o índice de confiabilidade.
+      Um único campo inteligente: <strong>cole o texto</strong>, <strong>cole o link de um site</strong> ou <strong>solte/cole (<kbd class="px-1.5 py-0.5 text-xs bg-slate-900 border border-slate-700 rounded">Ctrl+V</kbd>) um print de WhatsApp</strong>. O sistema identifica o formato sozinho.
     </p>
   </header>
 
@@ -36,160 +36,148 @@
   <main class="w-full max-w-3xl mx-auto px-4 py-4 flex-1">
     <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-2xl">
 
-      <!-- 1. Analisar por Link (URL de Site de Notícia) -->
-      <div class="mb-6 pb-6 border-b border-slate-800">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-          <label for="urlInput" class="text-xs font-semibold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
-            <span>🔗 Analisar Link de Site de Notícia (Web Scraping + Domínio)</span>
-          </label>
-          <button
-            type="button"
-            onclick="preencherUrlExemplo()"
-            class="text-xs text-sky-400 hover:text-sky-300 underline transition"
-          >
-            Testar com Link da Euronews
-          </button>
-        </div>
-
-        <div class="flex flex-col sm:flex-row gap-2">
-          <input
-            id="urlInput"
-            type="url"
-            placeholder="https://pt.euronews.com/2026/10/31/franca-mobiliza-70-mil-policias..."
-            class="flex-1 rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-100 placeholder-slate-500 px-4 py-3 text-sm outline-none transition"
-          />
-          <button
-            id="analyzeUrlBtn"
-            type="button"
-            onclick="analisarLink()"
-            class="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-semibold text-sm shadow-lg shadow-sky-600/20 transition whitespace-nowrap flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            <span>Extrair &amp; Analisar Link</span>
-          </button>
-        </div>
-        <p class="text-[11px] text-slate-500 mt-1.5">
-          Nosso backend acessa a página, extrai a manchete e o corpo da matéria, verifica a reputação do domínio e preenche a análise abaixo.
-        </p>
-      </div>
-
-      <!-- 2. Upload de Print / Imagem Viral do WhatsApp -->
-      <div class="mb-6 pb-6 border-b border-slate-800">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-          <label class="text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-            <span>📱 Anexar Print ou Imagem Viral de Grupo de WhatsApp (OCR)</span>
-          </label>
-          <button
-            type="button"
-            onclick="gerarPrintSimuladoWhatsApp()"
-            class="text-xs text-emerald-400 hover:text-emerald-300 underline transition"
-          >
-            Testar com Print Simulado de WhatsApp
-          </button>
-        </div>
-
-        <div
-          id="dropZone"
-          onclick="document.getElementById('imageInput').click()"
-          class="cursor-pointer border-2 border-dashed border-slate-700 hover:border-emerald-500/60 bg-slate-950/60 hover:bg-slate-950 rounded-xl p-4 sm:p-5 text-center transition group"
-        >
-          <input
-            id="imageInput"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            class="hidden"
-            onchange="processarArquivoImagem(event)"
-          />
-
-          <div id="uploadPrompt" class="flex flex-col items-center justify-center gap-2">
-            <div class="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition">
-              📷
-            </div>
-            <p class="text-xs sm:text-sm text-slate-300 font-medium">
-              Clique para escolher um print, arraste a imagem aqui ou pressione <kbd class="px-1.5 py-0.5 text-[11px] bg-slate-800 border border-slate-700 rounded">Ctrl+V</kbd>
-            </p>
-            <p class="text-[11px] text-slate-500">
-              Suporta PNG, JPG ou WebP • Extração automática de texto em Português
-            </p>
-          </div>
-
-          <!-- Preview da Imagem e Progresso do OCR -->
-          <div id="imagePreviewContainer" class="hidden flex-col sm:flex-row items-center gap-4 text-left" onclick="event.stopPropagation()">
-            <img id="imagePreview" src="" alt="Preview do Print" class="w-24 h-24 object-cover rounded-lg border border-slate-700 shadow-md" />
-            <div class="flex-1 w-full">
-              <div class="flex items-center justify-between">
-                <span id="ocrStatusTitle" class="text-xs font-semibold text-emerald-400">Lendo texto da imagem (OCR)...</span>
-                <button type="button" onclick="removerImagem()" class="text-xs text-rose-400 hover:text-rose-300">
-                  Remover print
-                </button>
-              </div>
-              <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden mt-2">
-                <div id="ocrProgressBar" class="h-full bg-emerald-500 transition-all duration-300 w-0"></div>
-              </div>
-              <p id="ocrStatusSub" class="text-[11px] text-slate-400 mt-1.5">
-                O texto reconhecido aparecerá automaticamente na caixa abaixo para você revisar ou analisar.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 3. Atalhos de Exemplo de Texto -->
+      <!-- Barra de Exemplos Rápidos (Testa todos os formatos no mesmo campo) -->
       <div class="mb-4">
         <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">
-          Ou testar com exemplos de texto rápidos:
+          Testar detecção automática com 1 clique:
         </span>
         <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="preencherExemplo('link')"
+            class="text-xs px-3 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 transition">
+            🔗 Link (Euronews)
+          </button>
+          <button type="button" onclick="gerarPrintSimuladoWhatsApp()"
+            class="text-xs px-3 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 transition">
+            📷 Print Simulado de WhatsApp
+          </button>
           <button type="button" onclick="preencherExemplo('verdadeira')"
             class="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition">
-            🟢 Exemplo Confiável
-          </button>
-          <button type="button" onclick="preencherExemplo('suspeita')"
-            class="text-xs px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition">
-            🟡 Exemplo Suspeito
+            🟢 Texto Confiável
           </button>
           <button type="button" onclick="preencherExemplo('falsa')"
             class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition">
-            🔴 Exemplo Corrente de WhatsApp
+            🔴 Texto Fake News
           </button>
         </div>
       </div>
 
-      <!-- Textarea -->
-      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-        <label for="newsInput" class="block text-sm font-medium text-slate-300">
-          Conteúdo da notícia (texto direto, matéria extraída do link ou transcrição do print):
-        </label>
-        <div class="flex items-center gap-2">
-          <span id="urlBadge" class="hidden text-[11px] px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">
-            🔗 Extraído via Link
-          </span>
-          <span id="ocrBadge" class="hidden text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-            ✨ Extraído via OCR do Print
-          </span>
+      <!-- CAMPO ÚNICO UNIFICADO (Omnibox: Texto + URL + Imagem Drag&Drop/Paste) -->
+      <div
+        id="unifiedBox"
+        class="relative rounded-2xl bg-slate-950 border-2 border-slate-800 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition overflow-hidden"
+      >
+        <!-- Overlay quando o usuário arrasta uma imagem por cima do campo -->
+        <div
+          id="dragOverlay"
+          class="hidden absolute inset-0 z-20 bg-indigo-950/90 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-indigo-400 rounded-2xl pointer-events-none"
+        >
+          <span class="text-3xl mb-2">📷</span>
+          <p class="text-sm sm:text-base font-bold text-indigo-200">
+            Solte o print ou imagem viral aqui!
+          </p>
+          <p class="text-xs text-indigo-300/80 mt-1">
+            O OCR extrairá o texto automaticamente para análise
+          </p>
+        </div>
+
+        <!-- Cabeçalho interno do campo único com detector de tipo em tempo real -->
+        <div class="flex items-center justify-between px-4 pt-3 pb-1.5 border-b border-slate-900">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-medium text-slate-400">Entrada Unificada</span>
+            <span
+              id="detectedTypeBadge"
+              class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 transition"
+            >
+              🤖 Aguardando conteúdo...
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onclick="limparCampo()"
+            class="text-xs text-slate-500 hover:text-slate-300 transition"
+          >
+            Limpar
+          </button>
+        </div>
+
+        <!-- Preview compacto quando uma imagem/print é anexada ou colada no campo -->
+        <div
+          id="imagePreviewContainer"
+          class="hidden mx-4 mt-3 p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex-col sm:flex-row items-center gap-3"
+        >
+          <img
+            id="imagePreview"
+            src=""
+            alt="Print anexado"
+            class="w-16 h-16 object-cover rounded-lg border border-slate-700 shrink-0"
+          />
+          <div class="flex-1 w-full">
+            <div class="flex items-center justify-between gap-2">
+              <span id="ocrStatusTitle" class="text-xs font-semibold text-purple-300">
+                Lendo texto da imagem (OCR)...
+              </span>
+              <button
+                type="button"
+                onclick="removerImagem()"
+                class="text-[11px] text-rose-400 hover:text-rose-300"
+              >
+                Remover imagem
+              </button>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1.5">
+              <div id="ocrProgressBar" class="h-full bg-purple-500 transition-all duration-300 w-0"></div>
+            </div>
+            <p id="ocrStatusSub" class="text-[11px] text-slate-400 mt-1">
+              O texto extraído do print aparece abaixo e pode ser editado se desejar.
+            </p>
+          </div>
+        </div>
+
+        <!-- Textarea Único -->
+        <textarea
+          id="newsInput"
+          rows="5"
+          placeholder="Cole aqui o texto da notícia, o link (https://...) ou pressione Ctrl+V / arraste um print de WhatsApp..."
+          class="w-full bg-transparent text-slate-100 placeholder-slate-500 p-4 text-sm sm:text-base outline-none resize-y"
+        ></textarea>
+
+        <!-- Barra inferior dentro do próprio campo (Anexar imagem + Contador) -->
+        <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-slate-900/50 border-t border-slate-900 text-xs text-slate-400">
+          <div class="flex items-center gap-2">
+            <input
+              id="imageInput"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              class="hidden"
+              onchange="processarArquivoImagem(event)"
+            />
+            <button
+              type="button"
+              onclick="document.getElementById('imageInput').click()"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition text-xs font-medium"
+              title="Enviar print ou imagem da galeria"
+            >
+              <span>📎</span>
+              <span>Anexar Print / Imagem</span>
+            </button>
+            <span class="hidden sm:inline text-[11px] text-slate-500">
+              ou arraste a imagem / use <kbd class="px-1 py-0.5 bg-slate-900 border border-slate-800 rounded">Ctrl+V</kbd>
+            </span>
+          </div>
+
+          <span id="charCount" class="text-[11px] text-slate-500">0 caracteres</span>
         </div>
       </div>
-      <textarea
-        id="newsInput"
-        rows="5"
-        placeholder="Cole aqui o texto, link de uma notícia ou anexe um print acima..."
-        class="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-100 placeholder-slate-500 p-4 text-sm sm:text-base outline-none transition resize-y"
-      ></textarea>
 
-      <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
-        <span id="charCount">0 caracteres</span>
-        <button type="button" onclick="limparCampo()" class="hover:text-slate-300 transition">
-          Limpar tudo
-        </button>
-      </div>
-
-      <!-- Botão Analisar -->
+      <!-- Botão Único de Ação -->
       <button
         id="analyzeBtn"
         type="button"
-        onclick="analisarNoticia()"
+        onclick="analisarConteudoUnificado()"
         class="mt-5 w-full py-3.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-sm sm:text-base shadow-lg shadow-indigo-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <span id="btnText">Analisar Notícia</span>
+        <span id="btnText">Analisar Conteúdo</span>
         <svg id="btnSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -225,10 +213,10 @@
           <span>🟢 100% (Confiável)</span>
         </div>
 
-        <!-- Metadados do Link Extraído (se veio de URL) -->
+        <!-- Metadados do Link Extraído (aparece automaticamente quando a entrada foi um Link) -->
         <div id="scrapedMetaBox" class="hidden mt-4 p-3.5 rounded-xl bg-sky-500/5 border border-sky-500/20 text-xs text-slate-300">
           <div class="flex items-center justify-between gap-2 mb-1">
-            <span class="font-semibold text-sky-400 uppercase tracking-wider">🌐 Fonte da Matéria Analisada</span>
+            <span class="font-semibold text-sky-400 uppercase tracking-wider">🌐 Matéria Extraída do Link</span>
             <span id="scrapedDomainBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[11px]"></span>
           </div>
           <p id="scrapedTitleText" class="font-medium text-slate-100 text-sm mt-1"></p>
@@ -251,13 +239,14 @@
 
   <!-- Footer -->
   <footer class="w-full max-w-3xl mx-auto px-4 py-6 text-center text-xs text-slate-500">
-    MVP Acadêmico de Ciência de Dados • TF-IDF + Multinomial Naive Bayes + Web Scraping (BeautifulSoup) + OCR (Tesseract.js)
+    MVP Acadêmico de Ciência de Dados • Entrada Unificada Inteligente (Texto, Web Scraping e OCR)
   </footer>
 
   <!-- Vanilla JS -->
   <script>
-    const urlInput = document.getElementById('urlInput');
-    const analyzeUrlBtn = document.getElementById('analyzeUrlBtn');
+    const unifiedBox = document.getElementById('unifiedBox');
+    const dragOverlay = document.getElementById('dragOverlay');
+    const detectedTypeBadge = document.getElementById('detectedTypeBadge');
     const newsInput = document.getElementById('newsInput');
     const charCount = document.getElementById('charCount');
     const analyzeBtn = document.getElementById('analyzeBtn');
@@ -265,13 +254,9 @@
     const btnSpinner = document.getElementById('btnSpinner');
     const errorBox = document.getElementById('errorBox');
     const resultCard = document.getElementById('resultCard');
-    const ocrBadge = document.getElementById('ocrBadge');
-    const urlBadge = document.getElementById('urlBadge');
     const scrapedMetaBox = document.getElementById('scrapedMetaBox');
     const scrapedDomainBadge = document.getElementById('scrapedDomainBadge');
     const scrapedTitleText = document.getElementById('scrapedTitleText');
-    const dropZone = document.getElementById('dropZone');
-    const uploadPrompt = document.getElementById('uploadPrompt');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
     const imagePreview = document.getElementById('imagePreview');
     const ocrProgressBar = document.getElementById('ocrProgressBar');
@@ -281,91 +266,101 @@
     let veioDeOcr = false;
 
     const EXEMPLOS = {
+      link: "https://pt.euronews.com/2026/10/31/franca-mobiliza-70-mil-policias-para-fim-de-semana-de-manifestacoes-e-halloween",
       verdadeira: "O Banco Central anunciou nesta quarta-feira a manutenção da taxa básica de juros Selic após reunião do Copom, citando projeções de inflação do IBGE e o desempenho do setor de serviços no último trimestre.",
-      suspeita: "Fontes afirmam que o ministério estuda uma possível mudança urgente nas regras de impostos no próximo mês, mas o congresso ainda não confirmou se a medida realmente será votada.",
       falsa: "Encaminhada com frequência\nURGENTE! Vazou áudio secreto que a grande mídia não quer mostrar! Tomar água morna com limão e bicarbonato em jejum cura 100% de qualquer doença em 3 dias! Compartilhe nos grupos antes que apaguem!"
     };
 
-    newsInput.addEventListener('input', () => {
-      charCount.textContent = `${newsInput.value.length} caracteres`;
-    });
-
-    function preencherUrlExemplo() {
-      urlInput.value = 'https://pt.euronews.com/2026/10/31/franca-mobiliza-70-mil-policias-para-fim-de-semana-de-manifestacoes-e-halloween';
-      analisarLink();
+    // Verifica se o conteúdo digitado/colado é uma URL
+    function extrairUrlSeForLink(valor) {
+      const limpo = valor.trim();
+      if (/^https?:\/\/\S+$/i.test(limpo)) {
+        return limpo;
+      }
+      if (/^www\.[a-z0-9.-]+\.[a-z]{2,}\/\S*$/i.test(limpo)) {
+        return 'https://' + limpo;
+      }
+      // Caso o usuário cole uma mensagem curta acompanhada de link
+      const match = limpo.match(/(https?:\/\/[^\s]+)/i);
+      if (match && limpo.length < match[1].length + 40) {
+        return match[1];
+      }
+      return null;
     }
 
-    async function analisarLink() {
-      const url = urlInput.value.trim();
-      errorBox.classList.add('hidden');
+    // Atualiza o selo visual informando o que o campo identificou automaticamente
+    function atualizarIndicadorDeTipo() {
+      const valor = newsInput.value.trim();
+      charCount.textContent = `${newsInput.value.length} caracteres`;
 
-      if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
-        mostrarErro('Por favor, insira um link válido começando com https:// ou http://');
+      if (veioDeOcr) {
+        detectedTypeBadge.textContent = '📷 Imagem / Print de WhatsApp (OCR)';
+        detectedTypeBadge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 transition';
+        btnText.textContent = 'Analisar Texto do Print';
         return;
       }
 
-      removerImagem();
-      analyzeUrlBtn.disabled = true;
-      analyzeBtn.disabled = true;
-      btnText.textContent = 'Extraindo matéria do link e analisando...';
-      btnSpinner.classList.remove('hidden');
+      if (!valor) {
+        detectedTypeBadge.textContent = '🤖 Aguardando texto, link ou imagem...';
+        detectedTypeBadge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 transition';
+        btnText.textContent = 'Analisar Conteúdo';
+        return;
+      }
 
-      try {
-        const response = await fetch('/api/index', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: url })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Falha ao extrair ou analisar o link informado.');
-        }
-
-        if (data.scraped_article) {
-          newsInput.value = data.scraped_article.extracted_text;
-          charCount.textContent = `${newsInput.value.length} caracteres`;
-          urlBadge.classList.remove('hidden');
-        }
-
-        exibirResultado(data);
-      } catch (err) {
-        mostrarErro(err.message || 'Não foi possível acessar o link informado.');
-      } finally {
-        analyzeUrlBtn.disabled = false;
-        analyzeBtn.disabled = false;
-        btnText.textContent = 'Analisar Notícia';
-        btnSpinner.classList.add('hidden');
+      const urlDetectada = extrairUrlSeForLink(valor);
+      if (urlDetectada) {
+        detectedTypeBadge.textContent = '🔗 Link de Site Detectado';
+        detectedTypeBadge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 transition';
+        btnText.textContent = 'Extrair & Analisar Link';
+      } else {
+        detectedTypeBadge.textContent = '📝 Texto de Notícia / Mensagem';
+        detectedTypeBadge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 transition';
+        btnText.textContent = 'Analisar Texto';
       }
     }
 
-    // Suporte a Arrastar e Soltar (Drag & Drop)
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('border-emerald-500');
+    newsInput.addEventListener('input', () => {
+      // Se o usuário apagar tudo manualmente, reseta flag de OCR
+      if (!newsInput.value.trim()) {
+        veioDeOcr = false;
+      }
+      atualizarIndicadorDeTipo();
     });
 
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('border-emerald-500');
+    // Drag & Drop direto no campo único
+    unifiedBox.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dragOverlay.classList.remove('hidden');
     });
 
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-emerald-500');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        executarOcrNaImagem(e.dataTransfer.files[0]);
+    unifiedBox.addEventListener('dragleave', (e) => {
+      if (!unifiedBox.contains(e.relatedTarget)) {
+        dragOverlay.classList.add('hidden');
       }
     });
 
-    // Suporte a Ctrl+V direto na página para colar print da área de transferência
+    unifiedBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dragOverlay.classList.add('hidden');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith('image/')) {
+          executarOcrNaImagem(file);
+        } else {
+          mostrarErro('Formato não suportado. Solte uma imagem (PNG, JPG ou WebP), cole um link ou digite o texto.');
+        }
+      }
+    });
+
+    // Colar imagem com Ctrl+V diretamente na página/campo
     window.addEventListener('paste', (e) => {
       const items = (e.clipboardData || e.originalEvent.clipboardData).items;
       for (const item of items) {
         if (item.type.indexOf('image') === 0) {
+          e.preventDefault();
           const blob = item.getAsFile();
           executarOcrNaImagem(blob);
-          break;
+          return;
         }
       }
     });
@@ -379,8 +374,6 @@
 
     async function executarOcrNaImagem(fileOrDataUrl) {
       errorBox.classList.add('hidden');
-      urlBadge.classList.add('hidden');
-      uploadPrompt.classList.add('hidden');
       imagePreviewContainer.classList.remove('hidden');
       imagePreviewContainer.classList.add('flex');
 
@@ -389,9 +382,12 @@
         : URL.createObjectURL(fileOrDataUrl);
 
       imagePreview.src = imageUrl;
+      veioDeOcr = true;
+      atualizarIndicadorDeTipo();
+
       ocrProgressBar.style.width = '10%';
       ocrStatusTitle.textContent = 'Inicializando motor de Visão Computacional (OCR)...';
-      ocrStatusSub.textContent = 'Identificando texto em Português na imagem anexada...';
+      ocrStatusSub.textContent = 'Reconhecendo texto em Português na imagem...';
       analyzeBtn.disabled = true;
 
       try {
@@ -400,7 +396,7 @@
             if (m.status === 'recognizing text') {
               const pct = Math.max(15, Math.round(m.progress * 100));
               ocrProgressBar.style.width = `${pct}%`;
-              ocrStatusTitle.textContent = `Extraindo texto do print (${pct}%)...`;
+              ocrStatusTitle.textContent = `Extraindo texto da imagem (${pct}%)...`;
             }
           }
         });
@@ -412,16 +408,15 @@
         }
 
         ocrProgressBar.style.width = '100%';
-        ocrStatusTitle.textContent = '✅ Texto extraído com sucesso do print!';
-        ocrStatusSub.textContent = 'Executando análise automática de confiabilidade...';
+        ocrStatusTitle.textContent = '✅ Texto extraído da imagem com sucesso!';
+        ocrStatusSub.textContent = 'Analisando confiabilidade do conteúdo extraído...';
 
         newsInput.value = textoExtraido;
-        charCount.textContent = `${newsInput.value.length} caracteres`;
         veioDeOcr = true;
-        ocrBadge.classList.remove('hidden');
+        atualizarIndicadorDeTipo();
 
         analyzeBtn.disabled = false;
-        await analisarNoticia();
+        await analisarConteudoUnificado();
       } catch (err) {
         mostrarErro(err.message || 'Erro ao ler o texto da imagem.');
         analyzeBtn.disabled = false;
@@ -467,48 +462,57 @@
       imagePreview.src = '';
       imagePreviewContainer.classList.add('hidden');
       imagePreviewContainer.classList.remove('flex');
-      uploadPrompt.classList.remove('hidden');
-      ocrBadge.classList.add('hidden');
       veioDeOcr = false;
+      atualizarIndicadorDeTipo();
     }
 
     function preencherExemplo(tipo) {
       removerImagem();
-      urlBadge.classList.add('hidden');
-      urlInput.value = '';
       newsInput.value = EXEMPLOS[tipo] || '';
-      charCount.textContent = `${newsInput.value.length} caracteres`;
       errorBox.classList.add('hidden');
+      atualizarIndicadorDeTipo();
+      analisarConteudoUnificado();
     }
 
     function limparCampo() {
       removerImagem();
-      urlBadge.classList.add('hidden');
-      urlInput.value = '';
       newsInput.value = '';
-      charCount.textContent = '0 caracteres';
       errorBox.classList.add('hidden');
       resultCard.classList.add('hidden');
+      atualizarIndicadorDeTipo();
     }
 
-    async function analisarNoticia() {
-      const texto = newsInput.value.trim();
+    async function analisarConteudoUnificado() {
+      const conteudo = newsInput.value.trim();
       errorBox.classList.add('hidden');
 
-      if (texto.length < 15) {
-        mostrarErro('Por favor, insira uma notícia, cole um link válido ou anexe um print.');
+      if (conteudo.length < 10) {
+        mostrarErro('Cole um texto, um link de notícia (https://...) ou anexe um print para analisar.');
         return;
       }
 
+      const urlDetectada = !veioDeOcr ? extrairUrlSeForLink(conteudo) : null;
+
       analyzeBtn.disabled = true;
-      btnText.textContent = 'Analisando padrões linguísticos...';
       btnSpinner.classList.remove('hidden');
 
+      if (urlDetectada) {
+        btnText.textContent = 'Acessando link e extraindo matéria...';
+      } else if (veioDeOcr) {
+        btnText.textContent = 'Analisando transcrição do print...';
+      } else {
+        btnText.textContent = 'Analisando padrões linguísticos...';
+      }
+
       try {
+        const payload = urlDetectada
+          ? { url: urlDetectada }
+          : { text: conteudo, from_ocr: veioDeOcr };
+
         const response = await fetch('/api/index', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: texto, from_ocr: veioDeOcr })
+          body: JSON.stringify(payload)
         });
 
         const data = await response.json();
@@ -517,10 +521,12 @@
           throw new Error(data.error || 'Falha ao processar a requisição no servidor.');
         }
 
+        // Se foi um link, mostramos o conteúdo extraído no próprio campo único
         if (data.scraped_article) {
-          newsInput.value = data.scraped_article.extracted_text;
+          newsInput.value = `${data.scraped_article.url}\n\n--- MATÉRIA EXTRAÍDA AUTOMATICAMENTE ---\n${data.scraped_article.extracted_text}`;
           charCount.textContent = `${newsInput.value.length} caracteres`;
-          urlBadge.classList.remove('hidden');
+          detectedTypeBadge.textContent = `🔗 Link Analisado (${data.scraped_article.domain})`;
+          detectedTypeBadge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 transition';
         }
 
         exibirResultado(data);
@@ -528,8 +534,8 @@
         mostrarErro(err.message || 'Não foi possível conectar ao servidor Serverless.');
       } finally {
         analyzeBtn.disabled = false;
-        btnText.textContent = 'Analisar Notícia';
         btnSpinner.classList.add('hidden');
+        atualizarIndicadorDeTipo();
       }
     }
 

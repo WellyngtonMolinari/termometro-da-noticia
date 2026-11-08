@@ -262,9 +262,18 @@ def catch_all(path):
     texto = (data.get("text") or "").strip()
     origem_ocr = bool(data.get("from_ocr", False))
 
-    # Se o usuario colou um link direto na caixa de texto, detectamos automaticamente
-    if not url_recebida and re.match(r"^https?://\S+$", texto):
-        url_recebida = texto
+    # Se o usuario colou um link direto na caixa unica (com ou sem http://), detectamos automaticamente
+    if not url_recebida:
+        texto_limpo = texto.strip()
+        if re.match(r"^https?://\S+$", texto_limpo, re.IGNORECASE):
+            url_recebida = texto_limpo
+        elif re.match(r"^www\.[a-z0-9.-]+\.[a-z]{2,}/\S*$", texto_limpo, re.IGNORECASE):
+            url_recebida = "https://" + texto_limpo
+        else:
+            # Se o usuario colou um texto curto junto com um link (ex: compartilhamento do WhatsApp)
+            match_url = re.search(r"(https?://[^\s]+)", texto_limpo, re.IGNORECASE)
+            if match_url and len(texto_limpo) < len(match_url.group(1)) + 40:
+                url_recebida = match_url.group(1)
 
     meta_url = None
     dominio_url = ""
